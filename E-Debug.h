@@ -1,5 +1,6 @@
 // E-Debug.h : E-Debug DLL 的主头文件
 //
+#include "stdafx.h"
 
 #pragma once
 
@@ -9,10 +10,15 @@
 
 #include "resource.h"		// 主符号
 
-extern char DIRECTORY[MAX_PATH];
+extern char DIRECTORY[MAX_PATH];  //定义全局变量,插件目录
+
 // CEDebugApp
 // 有关此类实现的信息，请参阅 E-Debug.cpp
 //
+
+static HANDLE GethProcess() {           //返回所调试进程的句柄
+	return (HANDLE)*(DWORD*)0x4D5A68;
+}
 
 class CEDebugApp : public CWinApp
 {

@@ -1,9 +1,18 @@
 // E-Debug.cpp : 定义 DLL 的初始化例程。
 //
 
+
+
+/*————————————————————————————
+E-debug   DLL与OD的交互接口
+————————————————————————————*/
+
+
+
+
 #include "stdafx.h"
 #include "E-Debug.h"
-#include "MainWindow.h"
+#include "MainWindow.h"   //载入窗口需要
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

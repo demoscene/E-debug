@@ -1,4 +1,44 @@
+#include "stdafx.h"
+
 #pragma once
+
+static DWORD Search_Bin(byte *pSrc, byte *pTrait, int nSrcLen, int nTraitLen) //低配版二进制搜索,用0x90来代替模糊搜索,返回偏移大小
+{
+	if (IsBadReadPtr(pSrc, 4) == TRUE)
+	{
+		return 0;
+	}
+	int i, j, k;
+	for (i = 0; i <= (nSrcLen - nTraitLen); i++)
+	{
+		if (pSrc[i] == pTrait[0])
+		{
+			k = i;
+			j = 0;
+			while (j < nTraitLen)
+			{
+				k++; j++;
+				if (pTrait[j] == 0x90)
+				{
+					continue;
+				}
+				if (pSrc[k] != pTrait[j])
+				{
+					break;
+				}
+			}
+
+			if (j == nTraitLen)
+			{
+				return i;
+			}
+
+		}
+
+	}
+	return 0;
+}
+
 
 typedef struct _ENTRYINFO // 易语言入口信息
 {
@@ -15,7 +55,7 @@ typedef struct _ENTRYINFO // 易语言入口信息
 	DWORD	dwApiCount;     //+28 Api数量
 	DWORD	pLibName;		//+2C 指向库名称
 	DWORD	pApiName;		//+30 指向Api名称
-
+	
 }*PEENTRYINFO;
 
 class EAnalysis
@@ -24,12 +64,9 @@ public:
 	EAnalysis(ULONG, ULONG);
 	~EAnalysis();
 
-	BOOL EStaticLibInit(); //静态编译--初始化
+	BOOL EStaticLibInit();     //静态编译--初始化
 	BOOL GetUserEntryPoint();  //静态编译--取用户结束地址
 
-	HANDLE GethProcess();
-
-	DWORD   QuerySearch(HANDLE h_gprocess,byte *pSrc,DWORD StartAddr);//内存模糊搜索,参数一为进程句柄,参数二搜寻字节,参数三为起始地址
 
 	DWORD	Search_Bin(byte *pSrc, byte *pTrait, int nSrcLen, int nTraitLen);
 	DWORD   Search_BinEx(byte *pSrc, byte *pTrait, int nSrcLen, int nTraitLen);

@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "E-Debug.h"
 #include "MainWindow.h"
 #include "EAnalyEngine.h"
 
@@ -48,6 +49,7 @@ BOOL EAnalysis::EStaticLibInit() {    //易语言静态编译 识别初始化
 	}
 
 	dwCalc = dwResult + 0x26 + text_dwBase;
+	
 
 	if (GetPoint(T_O2V(dwCalc)) - text_dwBase >text_dwSize)  //在区段外面
 	{
@@ -98,11 +100,6 @@ BOOL EAnalysis::GetUserEntryPoint() {
 
 	return true;
 }
-
-HANDLE EAnalysis::GethProcess() {
-	return (HANDLE)*(DWORD*)0x4D5A68;
-}
-
 
 
 DWORD EAnalysis::T_O2V(DWORD dwOaddr)  //实际地址到虚拟地址
@@ -168,6 +165,7 @@ DWORD EAnalysis::Search_Bin(byte *pSrc, byte *pTrait, int nSrcLen, int nTraitLen
 	}
 	return 0;
 }
+
 DWORD EAnalysis::Search_BinEx(byte *pSrc, byte *pTrait, int nSrcLen, int nTraitLen) //精确版本,无模糊匹配
 {
 	if (IsBadReadPtr(pSrc, 4) == TRUE)
@@ -201,7 +199,3 @@ DWORD EAnalysis::Search_BinEx(byte *pSrc, byte *pTrait, int nSrcLen, int nTraitL
 	return 0;
 }
 
-DWORD EAnalysis::QuerySearch(HANDLE h_gprocess, byte *pSrc, DWORD StartAddr){
-
-	return 1;
-}

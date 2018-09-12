@@ -1,6 +1,12 @@
 // MainWindow.cpp : 实现文件
 //
 
+
+/*
+	MainWindow,分析界面交互的接口
+*/
+
+
 #include "stdafx.h"
 #include "E-Debug.h"
 #include "afxdialogex.h"
@@ -8,9 +14,8 @@
 #include <vector>
 #include "EAnalyEngine.h"
 
-
-
 extern HINSTANCE g_hInstace;
+
 CMainWindow *pMaindlg;
 EAnalysis	*pEAnalysisEngine;
 
@@ -44,9 +49,11 @@ END_MESSAGE_MAP()
 
 
 // CMainWindow 消息处理程序
+
+
 BOOL CMainWindow::OnInitDialog() {
 	CDialog::OnInitDialog();
-	pMaindlg = this;
+	pMaindlg = this;   //得到窗口指针
 	
 	
 	HICON hIcon = LoadIcon(g_hInstace, MAKEINTRESOURCE(IDI_ICON));
@@ -57,23 +64,18 @@ BOOL CMainWindow::OnInitDialog() {
 	m_Tab.InsertItem(1, _T("API命令"));
 	m_Tab.InsertItem(2, _T("窗口组件"));
 
-	if (Getcputhreadid() == 0) {
-		return true;
-	}
 
 	ULONG uBase, uSize;
-	BOOL bInit;
 	INT nPos;
-	
 	Getdisassemblerrange(&uBase, &uSize);
-	
 	outputInfo("->开始分析当前区段....  分析地址: % 08X  内存大小: % 08X", uBase, uSize);
+
 
 	pEAnalysisEngine = new EAnalysis(uBase, uSize);
 
-	bInit = pEAnalysisEngine->EStaticLibInit();
 
-	if (bInit) {      //针对静态编译的易语言程序
+
+	if (pEAnalysisEngine->EStaticLibInit()) {    //易语言静态编译识别+初始化,识别失败返回false
 
 		std::vector<std::string> krnlCmd =
 		{ "错误回调", "DLL命令", "三方支持库命令", "核心支持库命令",
@@ -100,7 +102,6 @@ BOOL CMainWindow::OnInitDialog() {
 		}
 		DWORD	dwPoint;
 
-
 		if ( dwKrnlEntry > (pEAnalysisEngine->rdata_dwBase+pEAnalysisEngine->rdata_dwSize)) {     //部分加壳程序,区段被切割
 			ULONG tempSection=(DWORD)LocalAlloc(LMEM_ZEROINIT, krnlCmd.size()*4);
 			Readmemory((DWORD*)tempSection,dwKrnlEntry - krnlCmd.size() * 4, krnlCmd.size() * 4, MM_RESILENT);
@@ -122,7 +123,7 @@ BOOL CMainWindow::OnInitDialog() {
 		}
 
 
-
+		//To do Here,扫描基础特征码
 
 
 		outputInfo("->  枚举易语言<_krnl_fn_>核心支持命令成功...");
@@ -193,42 +194,6 @@ int CMainWindow::outputInfo(char *formatText, ...)
 	return m_output.InsertString(-1, A2W(buf));
 }
 
-DWORD Search_Bin(byte *pSrc, byte *pTrait, int nSrcLen, int nTraitLen)
-{
-	if (IsBadReadPtr(pSrc, 4) == TRUE)
-	{
-		return 0;
-	}
-	int i, j, k;
-	for (i = 0; i <= (nSrcLen - nTraitLen); i++)
-	{
-		if (pSrc[i] == pTrait[0])
-		{
-			k = i;
-			j = 0;
-			while (j < nTraitLen)
-			{
-				k++; j++;
-				if (pTrait[j] == 0x90)
-				{
-					continue;
-				}
-				if (pSrc[k] != pTrait[j])
-				{
-					break;
-				}
-			}
-
-			if (j == nTraitLen)
-			{
-				return i;
-			}
-
-		}
-
-	}
-	return 0;
-}
 
 void CMainWindow::OnLbnSelchangeLog()
 {
@@ -244,5 +209,5 @@ void CMainWindow::OnLbnSelchangeLog()
 
 void ScanCode(byte* pSrc,byte* pTrait,int nStrlen,int nTraitlen ) {
 	Search_Bin(pSrc,pTrait,nStrlen,nTraitlen);
-
 }
+
