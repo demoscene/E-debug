@@ -7,7 +7,10 @@
 *.o
 *.obj
 
-debug/
+.vs/
+Debug/
+ipch/
+
 # Precompiled Headers
 *.gch
 *.pch
@@ -31,3 +34,5 @@ debug/
 *.exe
 *.out
 *.app
+*.db
+*.opendb
