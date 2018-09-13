@@ -6,23 +6,23 @@ using namespace std;
 // CPage3 对话框
 typedef struct WindowInfo    //窗体信息的内存空间分布
 {
-	DWORD WindowCount;           //窗口的个数
-	vector<DWORD> WindowId;      //窗口的ID
-	vector<DWORD> WindowAddr;    //窗口内存地址,在编译出来的时候这个地址已经失效了
-	DWORD Unknow1;				//尚不清楚
-	DWORD Unknow2;				//尚不清楚
-	DWORD ZeroByte[2];			 //0x00000000
-	DWORD ControlCount;			 //控件的个数
-	DWORD ControlSize;			 //所占空间大小?
-	vector<DWORD> ControlID;     //控件的ID
+	DWORD WindowCount;            //窗口的个数
+	vector<DWORD> WindowId;       //窗口的ID
+	vector<DWORD> WindowAddr;     //窗口内存地址,在编译出来的时候这个地址已经失效了
+	DWORD MainWindowAddr;		  //窗口资源地址?无用数据
+	DWORD MainControlAddr;		  //控件资源地址?无用数据
+	DWORD ZeroByte[2];			  //0x00000000
+	DWORD ControlCount;			  //控件的个数
+	DWORD ControlSize;			  //所占空间大小?
+	vector<DWORD> ControlID;      //控件的ID
 	DWORD ZeroByte2;			  //0x00000000
-	vector<DWORD> Controloffset;		//控件地址的偏移
+	vector<DWORD> Controloffset;  //控件地址的偏移
 }*pWindowInfo;
 
 typedef struct WindowPropery  //窗口属性
 {
 	DWORD Size; //属性所占用的字节大小
-	DWORD ChildWindowId;  //子窗口的ID
+	DWORD ChildWindowId;  //子窗口的ID,注:每个窗体的子窗口默认为0x10001
 	BYTE ZeroByte[26];    //空白字节
 	DWORD left; //左边
 	DWORD top;  //顶边
@@ -62,7 +62,12 @@ typedef struct WindowPropery  //窗口属性
 	DWORD HelpContext; //帮助标志值
 	DWORD ShowInTaskBar; //在任务条中显示,1为真,0为假
 	DWORD HitMove; //随意移动,1为真,0为假
-	BYTE UnknowByte44[16]; //尚不清楚
+
+	DWORD shape; //外形,取值范围为0-29
+	DWORD Topmost; //总在最前,1为真,0为假
+	DWORD KeepTitleBarActive;//保持标题条激活,1为真,0为假
+	DWORD ClassNameSize; //窗口类名长度                        //BYTE ClassName[ClassNameSize];  //窗口类名,若窗口类名长度为0,则此值不存在
+
 	DWORD BackPicSize;   //底图大小,0表示无底图            //DWORD BackPic[BackPicSize];  底图图片,如果底图大小为0,则此值不存在
 	DWORD iconSize;     //图标大小                         //BYTE icon[iconSize]; //图标,如果图标大小为0,则此值不存在
 	DWORD BackMusicSize;  //背景音乐大小                   //BYTE BackMusic[BackMusicSize];  //背景音乐,如果背景音乐大小为0,则此值不存在
