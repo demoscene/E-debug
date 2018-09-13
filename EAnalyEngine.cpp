@@ -129,42 +129,6 @@ DWORD EAnalysis::R_GetOriginPoint(DWORD dwAddr)
 	return pDwData;
 }
 
-DWORD EAnalysis::Search_Bin(byte *pSrc, byte *pTrait, int nSrcLen, int nTraitLen)
-{
-	if (IsBadReadPtr(pSrc, 4) == TRUE)
-	{
-		return 0;
-	}
-	int i, j, k;
-	for (i = 0; i <= (nSrcLen - nTraitLen); i++)
-	{
-		if (pSrc[i] == pTrait[0])
-		{
-			k = i;
-			j = 0;
-			while (j < nTraitLen)
-			{
-				k++; j++;
-				if (pTrait[j] == 0x90)
-				{
-					continue;
-				}
-				if (pSrc[k] != pTrait[j])
-				{
-					break;
-				}
-			}
-
-			if (j == nTraitLen)
-			{
-				return i;
-			}
-
-		}
-
-	}
-	return 0;
-}
 
 DWORD EAnalysis::Search_BinEx(byte *pSrc, byte *pTrait, int nSrcLen, int nTraitLen) //精确版本,无模糊匹配
 {

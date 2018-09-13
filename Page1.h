@@ -1,6 +1,7 @@
 #pragma once
 #include "afxcmn.h"
-#include <vector>
+#include "stdafx.h"
+
 #include <string>
 #include <map>
 

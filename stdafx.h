@@ -38,5 +38,6 @@
 
 #define _CHAR_UNSIGNED
 #include <string>
+#include <vector>
 #include "Plugin.h"
 #pragma comment(lib,"Ollydbg.lib")

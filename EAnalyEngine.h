@@ -55,8 +55,9 @@ typedef struct _ENTRYINFO // 易语言入口信息
 	DWORD	dwApiCount;     //+28 Api数量
 	DWORD	pLibName;		//+2C 指向库名称
 	DWORD	pApiName;		//+30 指向Api名称
-	
 }*PEENTRYINFO;
+
+
 
 class EAnalysis
 {
@@ -67,8 +68,6 @@ public:
 	BOOL EStaticLibInit();     //静态编译--初始化
 	BOOL GetUserEntryPoint();  //静态编译--取用户结束地址
 
-
-	DWORD	Search_Bin(byte *pSrc, byte *pTrait, int nSrcLen, int nTraitLen);
 	DWORD   Search_BinEx(byte *pSrc, byte *pTrait, int nSrcLen, int nTraitLen);
 	DWORD	T_O2V(DWORD dwVaddr);//origin addr to virtual addr
 	DWORD	T_V2O(DWORD dwOaddr);

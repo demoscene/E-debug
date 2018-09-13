@@ -106,7 +106,7 @@ BOOL CPage2::OnInitDialog() {
 	DWORD   ORDER = 0;
 	
 	while (true) {
-		DWORD offset = pEAnalysisEngine->Search_Bin(pTmp, ComCall, dwSecSize, sizeof(ComCall));//得到偏移地址
+		DWORD offset = Search_Bin(pTmp, ComCall, dwSecSize, sizeof(ComCall));//得到偏移地址
 		if (offset == 0)
 			break;
 		dwResult += offset;
