@@ -1,6 +1,5 @@
-#include "stdafx.h"
-
 #pragma once
+#include "stdafx.h"
 
 using namespace std;
 // CPage3 对话框
@@ -9,13 +8,14 @@ typedef struct WindowInfo    //窗体信息的内存空间分布
 	DWORD WindowCount;            //窗口的个数
 	vector<DWORD> WindowId;       //窗口的ID
 	vector<DWORD> WindowAddr;     //窗口内存地址,在编译出来的时候这个地址已经失效了
-	DWORD MainWindowAddr;		  //窗口资源地址?无用数据
-	DWORD MainControlAddr;		  //控件资源地址?无用数据
-	DWORD ZeroByte[2];			  //0x00000000
+	DWORD WindowDataAddr;		  //窗口编译附加的无用数据?
+	DWORD ControlDataAddr;		  //控件编译附加的无用数据?
+	DWORD ZeroByte1;			  //0x00000000
+	DWORD ZeroByte2;			  //0x00000000
 	DWORD ControlCount;			  //控件的个数
 	DWORD ControlSize;			  //所占空间大小?
 	vector<DWORD> ControlID;      //控件的ID
-	DWORD ZeroByte2;			  //0x00000000
+	DWORD ZeroByte3;			  //0x00000000
 	vector<DWORD> Controloffset;  //控件地址的偏移
 }*pWindowInfo;
 
@@ -24,6 +24,7 @@ typedef struct WindowPropery  //窗口属性
 	DWORD Size; //属性所占用的字节大小
 	DWORD ChildWindowId;  //子窗口的ID,注:每个窗体的子窗口默认为0x10001
 	BYTE ZeroByte[26];    //空白字节
+
 	DWORD left; //左边
 	DWORD top;  //顶边
 	DWORD width; //宽度
@@ -40,7 +41,7 @@ typedef struct WindowPropery  //窗口属性
 						 //向上箭头型0x7F04,手型0x7F89
 	                     
 	//BYTE customMousePointer[MousePointerSize]; //自定义鼠标指针字节集,如果为选项中的鼠标指针,则此值不存在
-	string tag;   //标记,如果为空,则占一个NULL字节
+	//string tag;   //标记,如果为空,则占一个NULL字节
 	DWORD ZeroByte2;  //为0
 	DWORD visible_disable;  //二进制第一位为可视,1为真,0为假;第二位为禁止,1为真,0为假
 	BYTE UnknowByte2[40]; //尚不清楚
@@ -73,9 +74,7 @@ typedef struct WindowPropery  //窗口属性
 	DWORD BackMusicSize;  //背景音乐大小                   //BYTE BackMusic[BackMusicSize];  //背景音乐,如果背景音乐大小为0,则此值不存在
 	DWORD captionSize;   //标题长度                        //BYTE caption[captionSize];  //标题,如果标题长度为0,则此值不存在
 	DWORD HelpFileNameSize;  //帮助文件名长度              //BYTE HelpFileName[HelpFileNameSize]; //帮助文件名,如果帮助文件名长度为0,则此值不存在
-};
-
-//  00 00 00 00 00 00 00 00 04 00 00 00
+}*pWindowPropery;
 
 
 
@@ -98,6 +97,5 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL OnInitDialog();
-
-
+	CTreeCtrl m_Tree;
 };

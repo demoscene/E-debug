@@ -28,6 +28,7 @@ CPage3::~CPage3()
 void CPage3::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_TREE1, m_Tree);
 }
 
 
@@ -39,6 +40,15 @@ END_MESSAGE_MAP()
 
 BOOL CPage3::OnInitDialog() {
 	CDialog::OnInitDialog();
+
+	m_Tree.SetLineColor(RGB(0, 0, 255));
+
+	HTREEITEM hroot=m_Tree.InsertItem(_T("窗口"));
+
+	m_Tree.InsertItem(_T("_启动窗口"),hroot);
+	m_Tree.InsertItem(_T("功能窗口"), hroot);
+	m_Tree.InsertItem(_T("编辑框"), hroot);
+
 
 	WindowInfo m_WindowInfo;
 	DWORD EipAddr = pEAnalysisEngine->pEnteyInfo->dwEWindow; //当前解析数据结构的地址,真实地址
@@ -82,19 +92,3 @@ BOOL CPage3::OnInitDialog() {
 	return TRUE;
 }
 
-
-//窗口个数
-//窗口ID
-//对应内存地址
-//Unknow1
-//Unknow2
-//0000000
-//0000000
-//控件个数
-//控件大小?
-//控件ID
-//00000000
-//对应控件偏移
-
-//第一个控件空间大小
-//01 00 01 00
