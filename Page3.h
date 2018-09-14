@@ -6,22 +6,23 @@ using namespace std;
 typedef struct WindowInfo    //窗体信息的内存空间分布
 {
 	DWORD WindowCount;            //窗口的个数
-	vector<DWORD> WindowId;       //窗口的ID
+	vector<HTREEITEM> WindowId;   //窗口的ID,现用来存放窗口的根节点
 	vector<DWORD> WindowAddr;     //窗口内存地址,在编译出来的时候这个地址已经失效了
+	//vector<WindowPropery> Windows;
+}*pWindowInfo;
+
+typedef struct WindowPropery  //窗口属性
+{
 	DWORD WindowDataAddr;		  //窗口编译附加的无用数据?
 	DWORD ControlDataAddr;		  //控件编译附加的无用数据?
 	DWORD ZeroByte1;			  //0x00000000
 	DWORD ZeroByte2;			  //0x00000000
 	DWORD ControlCount;			  //控件的个数
-	DWORD ControlSize;			  //所占空间大小?
+	DWORD ControlSize;			  //所有组件占空间总大小
 	vector<DWORD> ControlID;      //控件的ID
 	DWORD ZeroByte3;			  //0x00000000
-	vector<DWORD> Controloffset;  //控件地址的偏移
-}*pWindowInfo;
+	vector<DWORD> Controloffset;  //控件空间大小
 
-typedef struct WindowPropery  //窗口属性
-{
-	DWORD Size; //属性所占用的字节大小
 	DWORD ChildWindowId;  //子窗口的ID,注:每个窗体的子窗口默认为0x10001
 	BYTE ZeroByte[26];    //空白字节
 
@@ -31,7 +32,7 @@ typedef struct WindowPropery  //窗口属性
 	DWORD height; //高度
 	BYTE UnknowByte1[12]; //尚不清楚
 	DWORD MousePointerSize; //自定义鼠标指针所占字节集的大小,如果是选项中的鼠标指针,则为4
-	DWORD MousePointer;  //选项中的鼠标指针特殊值,如果为自定义鼠标指针,则为-1,默认型为0
+	DWORD MousePointer;  //选项中的鼠标指针特殊值,如果为自定义鼠标指针,则为-1,默认型为0    //BYTE customMousePointer[MousePointerSize]; //自定义鼠标指针字节集,如果为选项中的鼠标指针,则此值不存在
 	                     //标准箭头型 0x7F00,十字型0x7F03
 						 //文本编辑型 0x7F01,沙漏型0x7F02
 						 //箭头及问号型 0x7F8B,箭头及沙漏型0x7F8A
@@ -40,9 +41,9 @@ typedef struct WindowPropery  //窗口属性
 						 //北<->西箭头型0x7F82,西<->东箭头型0x7F84
 						 //向上箭头型0x7F04,手型0x7F89
 	                     
-	//BYTE customMousePointer[MousePointerSize]; //自定义鼠标指针字节集,如果为选项中的鼠标指针,则此值不存在
+	
 	//string tag;   //标记,如果为空,则占一个NULL字节
-	DWORD ZeroByte2;  //为0
+	DWORD ZeroByte4;  //为0
 	DWORD visible_disable;  //二进制第一位为可视,1为真,0为假;第二位为禁止,1为真,0为假
 	BYTE UnknowByte2[40]; //尚不清楚
 	DWORD border;   //0为无边框,1为普通可调边框,2为普通固定边框,3为窄标题可调边框,4为窄标题固定边框,5为镜框式可调边框,6为镜框式固定边框

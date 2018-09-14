@@ -41,33 +41,54 @@ END_MESSAGE_MAP()
 BOOL CPage3::OnInitDialog() {
 	CDialog::OnInitDialog();
 
+
+
 	m_Tree.SetLineColor(RGB(0, 0, 255));
 
-	HTREEITEM hroot=m_Tree.InsertItem(_T("窗口"));
-
-	m_Tree.InsertItem(_T("_启动窗口"),hroot);
-	m_Tree.InsertItem(_T("功能窗口"), hroot);
-	m_Tree.InsertItem(_T("编辑框"), hroot);
 
 
+	//————————————————
 	WindowInfo m_WindowInfo;
-	DWORD EipAddr = pEAnalysisEngine->pEnteyInfo->dwEWindow; //当前解析数据结构的地址,真实地址
+	DWORD EipAddr = pEAnalysisEngine->pEnteyInfo->dwEWindow; //Eip地址为当前解析地址
+	if (EipAddr == 0) {
+		return TRUE;
+	}
 	m_WindowInfo.WindowCount =*(unsigned long*)pEAnalysisEngine->R_O2V(EipAddr)>>3;
 	if (m_WindowInfo.WindowCount == 0) {
 		return TRUE;
 	}
 
+	CString WinID;
+	CString ControlID;
+
 	for (int i = 0;i < m_WindowInfo.WindowCount;i++) {
 		EipAddr = EipAddr + 4;
-		m_WindowInfo.WindowId.push_back(*(DWORD*)(pEAnalysisEngine->R_O2V(EipAddr)));
-		pMaindlg->outputInfo("%X", m_WindowInfo.WindowId[i]);
-	}
-	for (int i = 0;i < m_WindowInfo.WindowCount;i++) {
-		EipAddr = EipAddr + 4;
-		//m_WindowInfo.WindowAddr.push_back(*(DWORD*)(pEAnalysisEngine->R_O2V(EipAddr))); //没有什么用的数据
+		WinID.Format(L"0x%X", *(DWORD*)(pEAnalysisEngine->R_O2V(EipAddr)));
+		m_WindowInfo.WindowId.push_back(m_Tree.InsertItem(WinID));
 	}
 
-	EipAddr = EipAddr + 20;
+	EipAddr = EipAddr + 4 * (m_WindowInfo.WindowCount+1); //跳过WindowAddr
+
+	WindowPropery m_WindowPropery;
+
+	for (int i = 0;i < m_WindowInfo.WindowCount;i++) {   //窗口依次解析
+		EipAddr = EipAddr + 16;
+		m_WindowPropery.ControlCount = *(unsigned long*)pEAnalysisEngine->R_O2V(EipAddr);
+		if (m_WindowPropery.ControlCount == 0) {
+			return true;
+		}
+		EipAddr = EipAddr + 4;
+		m_WindowPropery.ControlSize= *(unsigned long*)pEAnalysisEngine->R_O2V(EipAddr);
+		for (int j = 0;j < m_WindowPropery.ControlCount;j++) {
+			EipAddr = EipAddr + 4;
+			m_WindowPropery.ControlID.push_back(*(unsigned long*)pEAnalysisEngine->R_O2V(EipAddr));
+			ControlID.Format(L"0x%X",m_WindowPropery.ControlID[j]);
+			m_Tree.InsertItem(ControlID, m_WindowInfo.WindowId[i]);
+		}
+		EipAddr = 4 + (EipAddr - m_WindowPropery.ControlCount * 4) + m_WindowPropery.ControlSize;
+	}
+
+	/*EipAddr = EipAddr + 20;
 	m_WindowInfo.ControlCount = *(unsigned long*)pEAnalysisEngine->R_O2V(EipAddr);
 	if (m_WindowInfo.ControlCount == 0) {      //其实是默认自带一个控件ID的
 		return true;  
@@ -87,7 +108,7 @@ BOOL CPage3::OnInitDialog() {
 	for (int i = 0;i < m_WindowInfo.ControlCount;i++) {
 		EipAddr = EipAddr + 4;
 		m_WindowInfo.Controloffset.push_back(*(DWORD*)(pEAnalysisEngine->R_O2V(EipAddr)));
-	}
+	}*/
 
 	return TRUE;
 }
