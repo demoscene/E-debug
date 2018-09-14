@@ -15,6 +15,8 @@ extern  EAnalysis	*pEAnalysisEngine;
 
 IMPLEMENT_DYNAMIC(CPage3, CDialog)
 
+HTREEITEM hroot;
+
 CPage3::CPage3(CWnd* pParent /*=NULL*/)
 	: CDialog(IDD_PAGE3, pParent)
 {
@@ -33,6 +35,7 @@ void CPage3::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CPage3, CDialog)
+	ON_NOTIFY(TVN_ITEMEXPANDING, IDC_TREE1, &CPage3::OnTvnItemexpandingTree1)
 END_MESSAGE_MAP()
 
 
@@ -45,7 +48,7 @@ BOOL CPage3::OnInitDialog() {
 
 	m_Tree.SetLineColor(RGB(0, 0, 255));
 
-
+	hroot=m_Tree.InsertItem(_T("易语言窗口"));
 
 	//————————————————
 	WindowInfo m_WindowInfo;
@@ -64,7 +67,7 @@ BOOL CPage3::OnInitDialog() {
 	for (int i = 0;i < m_WindowInfo.WindowCount;i++) {
 		EipAddr = EipAddr + 4;
 		WinID.Format(L"0x%X", *(DWORD*)(pEAnalysisEngine->R_O2V(EipAddr)));
-		m_WindowInfo.WindowId.push_back(m_Tree.InsertItem(WinID));
+		m_WindowInfo.WindowId.push_back(m_Tree.InsertItem(WinID,hroot));
 	}
 
 	EipAddr = EipAddr + 4 * (m_WindowInfo.WindowCount+1); //跳过WindowAddr
@@ -110,6 +113,28 @@ BOOL CPage3::OnInitDialog() {
 		m_WindowInfo.Controloffset.push_back(*(DWORD*)(pEAnalysisEngine->R_O2V(EipAddr)));
 	}*/
 
+	
+
+	for (int i = 0;i < m_WindowInfo.WindowCount;i++) {
+		m_Tree.Expand(m_WindowInfo.WindowId[i],TVE_EXPAND);
+	}
+	m_Tree.Expand(hroot,TVE_EXPAND);
+
 	return TRUE;
 }
 
+
+
+void CPage3::OnTvnItemexpandingTree1(NMHDR *pNMHDR, LRESULT *pResult)   //点击易语言窗口的时候,不让收缩
+{
+	USES_CONVERSION;
+	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
+	// TODO: 在此添加控件通知处理程序代码
+	
+	if (pNMTreeView->itemNew.hItem == hroot && pNMTreeView->action==TVE_COLLAPSE) {
+		*pResult = TRUE;
+	}
+	else {
+		*pResult = 0;
+	}
+}

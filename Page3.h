@@ -99,4 +99,5 @@ protected:
 public:
 	virtual BOOL OnInitDialog();
 	CTreeCtrl m_Tree;
+	afx_msg void OnTvnItemexpandingTree1(NMHDR *pNMHDR, LRESULT *pResult);
 };
