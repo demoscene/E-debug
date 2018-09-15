@@ -15,6 +15,8 @@ extern  EAnalysis	*pEAnalysisEngine;
 
 IMPLEMENT_DYNAMIC(CPage3, CDialog)
 
+
+
 HTREEITEM hroot;
 
 CPage3::CPage3(CWnd* pParent /*=NULL*/)
