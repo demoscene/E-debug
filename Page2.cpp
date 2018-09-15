@@ -125,8 +125,7 @@ BOOL CPage2::OnInitDialog() {
 	}
 
 	pMaindlg->outputInfo("->  获取易语言<DllCmd>完毕...");
-
-	pMaindlg->outputInfo("->  TO BE CONTINUED....Bug:fjqisba@sohu.com");
+	pMaindlg->outputInfo("->  Bug反馈: https://github.com/fjqisba/E-debug");
 	return true;
 }
 

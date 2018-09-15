@@ -10,6 +10,7 @@
 .vs/
 Debug/
 ipch/
+Release/
 
 # Precompiled Headers
 *.gch
