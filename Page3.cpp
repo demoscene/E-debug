@@ -91,27 +91,6 @@ BOOL CPage3::OnInitDialog() {
 		EipAddr = 4 + (EipAddr - m_WindowPropery.ControlCount * 4) + m_WindowPropery.ControlSize;
 	}
 
-	/*EipAddr = EipAddr + 20;
-	m_WindowInfo.ControlCount = *(unsigned long*)pEAnalysisEngine->R_O2V(EipAddr);
-	if (m_WindowInfo.ControlCount == 0) {      //其实是默认自带一个控件ID的
-		return true;  
-	}
-
-	EipAddr = EipAddr + 4;
-	m_WindowInfo.ControlSize = *(unsigned long*)pEAnalysisEngine->R_O2V(EipAddr);
-
-	for (int i = 0;i < m_WindowInfo.ControlCount;i++) {
-		EipAddr = EipAddr + 4;
-		m_WindowInfo.ControlID.push_back(*(DWORD*)(pEAnalysisEngine->R_O2V(EipAddr)));
-		pMaindlg->outputInfo("%X", m_WindowInfo.ControlID[i]);
-	}
-
-	EipAddr = EipAddr + 4; 
-
-	for (int i = 0;i < m_WindowInfo.ControlCount;i++) {
-		EipAddr = EipAddr + 4;
-		m_WindowInfo.Controloffset.push_back(*(DWORD*)(pEAnalysisEngine->R_O2V(EipAddr)));
-	}*/
 
 	
 
@@ -137,4 +116,6 @@ void CPage3::OnTvnItemexpandingTree1(NMHDR *pNMHDR, LRESULT *pResult)   //点击易
 	else {
 		*pResult = 0;
 	}
+
+
 }
