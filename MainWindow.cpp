@@ -71,9 +71,7 @@ BOOL CMainWindow::OnInitDialog() {
 	outputInfo("->开始分析当前区段....  分析地址: % 08X  内存大小: % 08X", uBase, uSize);
 
 
-	pEAnalysisEngine = new EAnalysis(uBase, uSize);
-
-
+	pEAnalysisEngine = new EAnalysis(uBase,uSize);   //初始化内存
 
 	if (pEAnalysisEngine->EStaticLibInit()) {    //易语言静态编译识别+初始化,识别失败返回false
 
@@ -102,24 +100,17 @@ BOOL CMainWindow::OnInitDialog() {
 		}
 		DWORD	dwPoint;
 
-		if ( dwKrnlEntry > (pEAnalysisEngine->rdata_dwBase+pEAnalysisEngine->rdata_dwSize)) {     //部分加壳程序,区段被切割
-			ULONG tempSection=(DWORD)LocalAlloc(LMEM_ZEROINIT, krnlCmd.size()*4);
-			Readmemory((DWORD*)tempSection,dwKrnlEntry - krnlCmd.size() * 4, krnlCmd.size() * 4, MM_RESILENT);
-			for (int i = 0; i < krnlCmd.size(); i++) {
-				dwPoint = pEAnalysisEngine->GetPoint((DWORD)tempSection);
-				Insertname(dwPoint, NM_LABEL, (char*)krnlCmd[i].c_str());
-				tempSection +=sizeof(DWORD);
-			}
-			LocalFree((HLOCAL)tempSection);
-		}
-		else {
-			for (int i = krnlCmd.size() - 1; i >= 0; i--)
-			{
-				dwKrnlEntry -= sizeof(DWORD);
-				dwPoint = pEAnalysisEngine->GetPoint(pEAnalysisEngine->R_O2V(dwKrnlEntry));
-				Insertname(dwPoint, NM_LABEL, (char*)krnlCmd[i].c_str());
-			}
+		UINT index = pEAnalysisEngine->FindSection(dwKrnlEntry);
 
+		if (index == -1) {           //区段有可能被切割,加入新的区段
+			index = pEAnalysisEngine->AddSection(dwKrnlEntry);
+		}
+	
+		for (int i = krnlCmd.size() - 1; i >= 0; i--)
+		{
+			dwKrnlEntry -= sizeof(DWORD);
+			dwPoint = pEAnalysisEngine->GetPoint(pEAnalysisEngine->O2V(dwKrnlEntry,index));
+			Insertname(dwPoint, NM_LABEL, (char*)krnlCmd[i].c_str());
 		}
 
 
@@ -134,6 +125,7 @@ BOOL CMainWindow::OnInitDialog() {
 		return true;
 	}
 
+	
 
 	CRect rc;
 	m_Tab.GetClientRect(&rc);
@@ -144,6 +136,8 @@ BOOL CMainWindow::OnInitDialog() {
 
 	m_page1.Create(IDD_PAGE1, &m_Tab);
 	m_page1.MoveWindow(&rc);
+
+	
 
     m_page2.Create(IDD_PAGE2, &m_Tab);
 	m_page2.MoveWindow(&rc);
@@ -159,23 +153,41 @@ BOOL CMainWindow::OnInitDialog() {
 
 void CMainWindow::OnTcnSelchangeTab1(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	int nCursel = m_Tab.GetCurSel();
+	int nCursel = m_Tab.GetCurSel()+1;
 	switch (nCursel)
 	{
-	case 0:
-		m_page1.ShowWindow(true);
-		m_page2.ShowWindow(false);
-		m_page3.ShowWindow(false);
-		break;
 	case 1:
-		m_page1.ShowWindow(false);
-		m_page2.ShowWindow(true);
-		m_page3.ShowWindow(false);
+		if (IsWindow(m_page1.m_hWnd)) {
+			m_page1.ShowWindow(true);
+		}
+		if (IsWindow(m_page2.m_hWnd)) {
+			m_page2.ShowWindow(false);
+		}
+		if (IsWindow(m_page3.m_hWnd)) {
+			m_page3.ShowWindow(false);
+		}
 		break;
 	case 2:
-		m_page1.ShowWindow(false);
-		m_page2.ShowWindow(false);
-		m_page3.ShowWindow(true);
+		if (IsWindow(m_page1.m_hWnd)) {
+			m_page1.ShowWindow(false);
+		}
+		if (IsWindow(m_page2.m_hWnd)) {
+			m_page2.ShowWindow(true);
+		}
+		if (IsWindow(m_page3.m_hWnd)) {
+			m_page3.ShowWindow(false);
+		}
+		break;
+	case 3:
+		if (IsWindow(m_page1.m_hWnd)) {
+			m_page1.ShowWindow(false);
+		}
+		if (IsWindow(m_page2.m_hWnd)) {
+			m_page2.ShowWindow(false);
+		}
+		if (IsWindow(m_page3.m_hWnd)) {
+			m_page3.ShowWindow(true);
+		}
 		break;
 	default:
 		break;

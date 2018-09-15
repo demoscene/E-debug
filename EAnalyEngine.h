@@ -40,6 +40,15 @@ static DWORD Search_Bin(byte *pSrc, byte *pTrait, int nSrcLen, int nTraitLen) //
 }
 
 
+
+
+typedef struct sectionAlloc
+{
+	BYTE* SectionAddr;  //申请的内存空间地址
+	DWORD dwBase;       //原始代码区段的基址
+	DWORD dwSize;       //原始代码区段的大小
+}*psectionAlloc;
+
 typedef struct _ENTRYINFO // 易语言入口信息
 {
 	DWORD	dwMagic;		//<- 未知
@@ -62,28 +71,26 @@ typedef struct _ENTRYINFO // 易语言入口信息
 class EAnalysis
 {
 public:
-	EAnalysis(ULONG, ULONG);
+	EAnalysis(ULONG dwVBase, ULONG dwVsize);
 	~EAnalysis();
-
+	
 	BOOL EStaticLibInit();     //静态编译--初始化
 	BOOL GetUserEntryPoint();  //静态编译--取用户结束地址
 
+	UINT FindSection(DWORD addr); //寻找地址是否在区段表中,返回index
+	UINT AddSection(DWORD addr);  //内存拷贝表中增加区段,返回新的index
+
 	DWORD   Search_BinEx(byte *pSrc, byte *pTrait, int nSrcLen, int nTraitLen);
-	DWORD	T_O2V(DWORD dwVaddr);//origin addr to virtual addr
-	DWORD	T_V2O(DWORD dwOaddr);
-	DWORD	R_O2V(DWORD dwVaddr);//origin addr to virtual addr
-	DWORD	R_V2O(DWORD dwOaddr);
+	DWORD	O2V(DWORD dwVaddr, UINT index);//origin addr to virtual addr
+	DWORD	V2O(DWORD dwOaddr, UINT index);
+
+
 	DWORD	GetPoint(DWORD dwAddr);
-	DWORD	R_GetOriginPoint(DWORD dwAddr);
+	DWORD	GetOriginPoint(DWORD dwAddr, UINT index);
 	DWORD dwUsercodeStart; //用户代码的起始地址
 	DWORD dwUsercodeEnd;   //用户代码的结束地址
 
-	BYTE	*textSection; // 申请的代码段空间
-	BYTE    *rdataSection;// 申请的输入表段空间
-	ULONG	text_dwBase;		// 
-	ULONG	text_dwSize;		// 
-	ULONG	rdata_dwBase;		// 
-	ULONG	rdata_dwSize;		//
+	vector<sectionAlloc> SectionMap;    //维护一份内存拷贝表
 
 	PEENTRYINFO pEnteyInfo; // entry info
 private:

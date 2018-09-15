@@ -54,6 +54,7 @@ END_MESSAGE_MAP()
 BOOL CPage2::OnInitDialog() {
 	CDialog::OnInitDialog();
 
+	
 	LONG lStyle;
 
 	lStyle = GetWindowLong(m_api.m_hWnd, GWL_STYLE);//获取当前窗口style
@@ -78,11 +79,18 @@ BOOL CPage2::OnInitDialog() {
 	unsigned long pszApinameAddr;
 	CString order;
 	int nPos = 0;
-	pszLibnameAddr = pEAnalysisEngine->R_O2V(pEAnalysisEngine->pEnteyInfo->pLibName);
-	pszApinameAddr = pEAnalysisEngine->R_O2V(pEAnalysisEngine->pEnteyInfo->pApiName);
+
+	UINT r_index = pEAnalysisEngine->FindSection(pEAnalysisEngine->pEnteyInfo->pLibName);
+	if (r_index == -1) {
+		r_index = pEAnalysisEngine->AddSection(pEAnalysisEngine->pEnteyInfo->pLibName);
+	}
+	
+	pszLibnameAddr = pEAnalysisEngine->O2V(pEAnalysisEngine->pEnteyInfo->pLibName,r_index);
+	pszApinameAddr = pEAnalysisEngine->O2V(pEAnalysisEngine->pEnteyInfo->pApiName,r_index);
+
 	for (int i = 0;i < pEAnalysisEngine->pEnteyInfo->dwApiCount;i++) {
-		pszLibname = (char*)pEAnalysisEngine->R_O2V(*(long*)pszLibnameAddr);
-		pszApiname = (char*)pEAnalysisEngine->R_O2V(*(long*)pszApinameAddr);
+		pszLibname = (char*)pEAnalysisEngine->O2V(*(long*)pszLibnameAddr,r_index);
+		pszApiname = (char*)pEAnalysisEngine->O2V(*(long*)pszApinameAddr, r_index);
 		if (*(byte*)pszLibname == NULL) {
 			pszLibname = "NULL";
 		}
@@ -97,8 +105,9 @@ BOOL CPage2::OnInitDialog() {
 		pszApinameAddr += 4;
 	}
 
+
 	byte ComCall[15] = { 0xB8, 0x90, 0x90, 0x00, 0x00 ,0xE8,0x90,0x90,0x90,0x90,0x39,0x65,0x90,0x74,0x90 };
-	byte *pTmp = (byte*)pEAnalysisEngine->T_O2V(pEAnalysisEngine->dwUsercodeStart);
+	byte *pTmp = (byte*)pEAnalysisEngine->O2V(pEAnalysisEngine->dwUsercodeStart,0);
 
 	DWORD	dwSecSize = pEAnalysisEngine->dwUsercodeEnd - pEAnalysisEngine->dwUsercodeStart;
 	DWORD	dwResult = pEAnalysisEngine->dwUsercodeStart;    //搜寻结果地址
@@ -110,7 +119,7 @@ BOOL CPage2::OnInitDialog() {
 		if (offset == 0)
 			break;
 		dwResult += offset;
-		ORDER = *(DWORD*)(pEAnalysisEngine->T_O2V(dwResult+1));
+		ORDER = *(DWORD*)(pEAnalysisEngine->O2V(dwResult+1,0));
 		m_map[ORDER].push_back(dwResult);
 		Insertname(dwResult, NM_COMMENT, W2A(m_api.GetItemText(ORDER,2)));
 		dwResult += sizeof(ComCall);

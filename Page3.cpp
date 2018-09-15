@@ -45,7 +45,6 @@ BOOL CPage3::OnInitDialog() {
 	CDialog::OnInitDialog();
 
 
-
 	m_Tree.SetLineColor(RGB(0, 0, 255));
 
 	hroot=m_Tree.InsertItem(_T("易语言窗口"));
@@ -56,17 +55,25 @@ BOOL CPage3::OnInitDialog() {
 	if (EipAddr == 0) {
 		return TRUE;
 	}
-	m_WindowInfo.WindowCount =*(unsigned long*)pEAnalysisEngine->R_O2V(EipAddr)>>3;
+
+	UINT r_index = pEAnalysisEngine->FindSection(EipAddr);
+	if (r_index == -1) {
+		r_index = pEAnalysisEngine->AddSection(EipAddr);
+	}
+
+	m_WindowInfo.WindowCount =*(unsigned long*)pEAnalysisEngine->O2V(EipAddr,r_index)>>3;
 	if (m_WindowInfo.WindowCount == 0) {
 		return TRUE;
 	}
 
+
 	CString WinID;
 	CString ControlID;
 
+	
 	for (int i = 0;i < m_WindowInfo.WindowCount;i++) {
 		EipAddr = EipAddr + 4;
-		WinID.Format(L"0x%X", *(DWORD*)(pEAnalysisEngine->R_O2V(EipAddr)));
+		WinID.Format(L"0x%X", *(DWORD*)(pEAnalysisEngine->O2V(EipAddr,r_index)));
 		m_WindowInfo.WindowId.push_back(m_Tree.InsertItem(WinID,hroot));
 	}
 
@@ -76,15 +83,15 @@ BOOL CPage3::OnInitDialog() {
 
 	for (int i = 0;i < m_WindowInfo.WindowCount;i++) {   //窗口依次解析
 		EipAddr = EipAddr + 16;
-		m_WindowPropery.ControlCount = *(unsigned long*)pEAnalysisEngine->R_O2V(EipAddr);
+		m_WindowPropery.ControlCount = *(unsigned long*)pEAnalysisEngine->O2V(EipAddr,r_index);
 		if (m_WindowPropery.ControlCount == 0) {
 			return true;
 		}
 		EipAddr = EipAddr + 4;
-		m_WindowPropery.ControlSize= *(unsigned long*)pEAnalysisEngine->R_O2V(EipAddr);
+		m_WindowPropery.ControlSize= *(unsigned long*)pEAnalysisEngine->O2V(EipAddr,r_index);
 		for (int j = 0;j < m_WindowPropery.ControlCount;j++) {
 			EipAddr = EipAddr + 4;
-			m_WindowPropery.ControlID.push_back(*(unsigned long*)pEAnalysisEngine->R_O2V(EipAddr));
+			m_WindowPropery.ControlID.push_back(*(unsigned long*)pEAnalysisEngine->O2V(EipAddr,r_index));
 			ControlID.Format(L"0x%X",m_WindowPropery.ControlID[j]);
 			m_Tree.InsertItem(ControlID, m_WindowInfo.WindowId[i]);
 		}
@@ -98,7 +105,7 @@ BOOL CPage3::OnInitDialog() {
 		m_Tree.Expand(m_WindowInfo.WindowId[i],TVE_EXPAND);
 	}
 	m_Tree.Expand(hroot,TVE_EXPAND);
-
+	
 	return TRUE;
 }
 

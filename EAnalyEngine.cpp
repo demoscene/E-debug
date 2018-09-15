@@ -5,77 +5,84 @@
 
 extern CMainWindow *pMaindlg;
 
+UINT EAnalysis::FindSection(DWORD addr) {
+	for (int i = 0;i < SectionMap.size();i++) {
+		if (addr >= SectionMap[i].dwBase && addr < (SectionMap[i].dwBase + SectionMap[i].dwSize)) {
+			return i;
+		}
+	}
+	return -1;
+}
 
-EAnalysis::EAnalysis(ULONG dwVBase, ULONG dwVSize)
+UINT EAnalysis::AddSection(DWORD addr) {
+	_MEMORY_BASIC_INFORMATION MB;
+	sectionAlloc addsection;
+
+	if (!VirtualQueryEx(GethProcess(), (LPCVOID*)addr, &MB, sizeof(MEMORY_BASIC_INFORMATION))) {
+		pMaindlg->outputInfo("查询内存失败!");
+		return FALSE;
+	}
+	
+	addsection.dwBase = (ULONG)MB.BaseAddress;
+	addsection.dwSize = MB.RegionSize;
+
+	addsection.SectionAddr = (BYTE *)VirtualAlloc(NULL, addsection.dwSize, MEM_COMMIT, PAGE_READWRITE);
+	if (addsection.SectionAddr == NULL) {
+		pMaindlg->outputInfo("申请额外内存失败!");
+		return -1;
+	}
+
+	Readmemory(addsection.SectionAddr, addsection.dwBase, addsection.dwSize, MM_RESILENT);
+	SectionMap.push_back(addsection);
+	return SectionMap.size()-1;
+}
+
+EAnalysis::EAnalysis(ULONG dwVBase,ULONG dwVsize)
 {
-	text_dwBase = dwVBase;
-	text_dwSize = dwVSize;
-	textSection = NULL;
-	rdataSection = NULL;
+	sectionAlloc textSection;
+
+	textSection.SectionAddr = (BYTE *)VirtualAlloc(NULL, dwVBase, MEM_COMMIT, PAGE_READWRITE); //申请最初的代码段空间
+	textSection.dwBase = dwVBase;
+	textSection.dwSize = dwVsize;
+
+	Readmemory(textSection.SectionAddr, dwVBase, dwVsize, MM_RESILENT);
+
+	SectionMap.push_back(textSection);
 }
 
 EAnalysis::~EAnalysis()
 {
-	if (textSection != NULL)
-	{
-		VirtualFree((LPVOID)textSection, 0, MEM_RELEASE);// free buf
-	}
+
 }
 
 BOOL EAnalysis::EStaticLibInit() {    //易语言静态编译 识别初始化
 
 	DWORD	dwResult;
 	DWORD	dwCalc;
-	_MEMORY_BASIC_INFORMATION MB;
 
 	BYTE SearchCode[17] = { 0x50,0x64,0x89,0x25,0x00,0x00,0x00,0x00,
 						  0x81,0xEC,0xAC,0x01,0x00,0x00,0x53,0x56,0x57 };
 
-	textSection = (BYTE *)VirtualAlloc(NULL, text_dwSize, MEM_COMMIT, PAGE_READWRITE); //申请一块代码段空间
 	
-	if (textSection == NULL)
-	{
-		pMaindlg->outputInfo("申请代码段内存失败!");
-		return FALSE;
-	}
-
-	Readmemory(textSection, text_dwBase, text_dwSize, MM_RESILENT);
-
-	dwResult = Search_Bin(textSection, SearchCode, text_dwSize, sizeof(SearchCode));
+	dwResult = Search_Bin(SectionMap[0].SectionAddr, SearchCode, SectionMap[0].dwSize, sizeof(SearchCode));
 
 	if (dwResult == 0)
 	{
 		return FALSE;
 	}
 
-	dwCalc = dwResult + 0x26 + text_dwBase;
+	dwCalc = dwResult + 0x26 + SectionMap[0].dwBase;
 	
+	DWORD EntryAddr = GetPoint(O2V(dwCalc,0));
 
-	if (GetPoint(T_O2V(dwCalc)) - text_dwBase >text_dwSize)  //在区段外面
+	if (EntryAddr - SectionMap[0].dwBase > SectionMap[0].dwSize)  //如果入口地址在另一个区段,则添加一份表
 	{
-		if (!VirtualQueryEx(GethProcess(), (LPCVOID*)GetPoint(T_O2V(dwCalc)), &MB, sizeof(MEMORY_BASIC_INFORMATION))) {
-			pMaindlg->outputInfo("查询内存失败!");
-			return FALSE;
-		}
-
-		rdata_dwBase =(ULONG)MB.BaseAddress;
-		rdata_dwSize = MB.RegionSize;
-		rdataSection = (BYTE *)VirtualAlloc(NULL, rdata_dwSize, MEM_COMMIT, PAGE_READWRITE);
-		if (rdataSection == NULL) {
-			pMaindlg->outputInfo("申请输入表段内存失败!");
-			return FALSE;
-		}
-
-		Readmemory(rdataSection, rdata_dwBase, rdata_dwSize, MM_RESILENT);
+		UINT index=AddSection(EntryAddr);
+		pEnteyInfo = (PEENTRYINFO)O2V(EntryAddr, index);
 	}
 	else {
-		rdataSection = textSection;
-		rdata_dwBase = text_dwBase;
-		rdata_dwSize = text_dwSize;
+		pEnteyInfo = (PEENTRYINFO)O2V(EntryAddr, 0);
 	}
-
-	pEnteyInfo = (PEENTRYINFO)R_O2V(GetPoint(T_O2V(dwCalc)));
-
 
 	dwUsercodeStart = pEnteyInfo->dwUserCodeStart;
 
@@ -90,42 +97,36 @@ BOOL EAnalysis::GetUserEntryPoint() {
 	DWORD	dwResult;
 	DWORD	dwStartEntry;
 
-	dwResult = Search_Bin(textSection, data, text_dwSize, sizeof(data));
+	dwResult = Search_Bin(SectionMap[0].SectionAddr, data, SectionMap[0].dwSize, sizeof(data));
 	if (dwResult == 0)
 	{
 		return false;
 	}
-	dwStartEntry = dwResult + 0x37 + text_dwBase; //call addr
-	dwUsercodeEnd = GetPoint(T_O2V(dwStartEntry) + 1) + dwStartEntry + 5;
+	dwStartEntry = dwResult + 0x37 + SectionMap[0].dwBase; //call addr
+	dwUsercodeEnd = GetPoint(O2V(dwStartEntry,0) + 1) + dwStartEntry + 5;
 
 	return true;
 }
 
 
-DWORD EAnalysis::T_O2V(DWORD dwOaddr)  //实际地址到虚拟地址
+DWORD EAnalysis::O2V(DWORD dwOaddr, UINT index)  //实际地址到虚拟地址
 {
-	return dwOaddr - text_dwBase + (DWORD)textSection;
+	return dwOaddr - SectionMap[index].dwBase + (DWORD)SectionMap[index].SectionAddr;
 }
-DWORD EAnalysis::T_V2O(DWORD dwVaddr) //虚拟地址到实际地址
+DWORD EAnalysis::V2O(DWORD dwVaddr, UINT index) //虚拟地址到实际地址
 {
-	return dwVaddr - (DWORD)textSection + text_dwBase;
+	return dwVaddr - (DWORD)SectionMap[index].SectionAddr + SectionMap[index].dwBase;
 }
-DWORD EAnalysis::R_O2V(DWORD dwOaddr)  //实际地址到虚拟地址
-{
-	return dwOaddr - rdata_dwBase + (DWORD)rdataSection;
-}
-DWORD EAnalysis::R_V2O(DWORD dwVaddr) //虚拟地址到实际地址
-{
-	return dwVaddr - (DWORD)rdataSection + rdata_dwBase;
-}
+
+
 DWORD EAnalysis::GetPoint(DWORD dwAddr)
 {
 	return *(DWORD*)dwAddr;
 }
-DWORD EAnalysis::R_GetOriginPoint(DWORD dwAddr)
+DWORD EAnalysis::GetOriginPoint(DWORD dwAddr,UINT index)
 {
 	DWORD	pDwData;
-	pDwData = GetPoint(R_O2V(dwAddr));
+    pDwData = GetPoint(O2V(dwAddr, index));
 	return pDwData;
 }
 
