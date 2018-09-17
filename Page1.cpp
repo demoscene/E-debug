@@ -438,7 +438,7 @@ void CPage1::On32771()   //查找引用按钮
 	pMaindlg->outputInfo("-> 执行命令   --==查找引用==--");
 	byte ComCall[5] = { 0xBB, 0, 0, 0, 0 };
 	memcpy(&ComCall[1], &dwData, sizeof(DWORD));
-/*	byte *pTmp = (byte*)pEAnalysisEngine->T_O2V(pEAnalysisEngine->dwUsercodeStart);
+ 	byte *pTmp = (byte*)pEAnalysisEngine->O2V(pEAnalysisEngine->dwUsercodeStart,0);
 
 	DWORD	dwSecSize = pEAnalysisEngine->dwUsercodeEnd - pEAnalysisEngine->dwUsercodeStart;
 	DWORD	dwResult = pEAnalysisEngine->dwUsercodeStart;    //搜寻结果地址
@@ -453,5 +453,5 @@ void CPage1::On32771()   //查找引用按钮
 		dwResult += sizeof(ComCall);
 		pTmp += offset+sizeof(ComCall);		
 		dwSecSize -= offset + sizeof(ComCall);
-	}*/
+	}
 }
