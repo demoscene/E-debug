@@ -11,6 +11,38 @@ typedef struct WindowInfo    //窗体信息的内存空间分布
 	//vector<WindowPropery> Windows;
 }*pWindowInfo;
 
+
+/*typedef struct ButtonPropery
+{
+	DWORD ChildWindowId;  //子窗口ID
+	BYTE ZeroByte1[20];
+	string name;  //按钮名称
+	BYTE ZeroByte2[5];
+	DWORD left; //左边
+	DWORD top;  //顶边
+	DWORD width; //宽度
+	DWORD height;//高度
+	BYTE ZeroByte3[12];
+	DWORD Propery;  //3,4??
+
+	DWORD Unknow3;
+	string tag;         //标记,如果为空,则占一个NULL字节
+	DWORD Unknow4;
+	DWORD propery;      //二进制第一位为可视,第二位为禁止,第三位为可停留焦点.1为真,0为假
+	DWORD focusorder;   //停留顺序
+
+	BYTE Unknow1[28];
+	DWORD style;        //类型,0为通常,1为默认
+	DWORD HorzAlign;    //横向对齐方式,0为左边,1为居中,2为右边
+	DWORD VertAlign;    //纵向对齐方式,0为顶边,1为居中,2为底边
+
+	DWORD picSize;  //图片资源大小   BYTE pic[picSize];
+
+	DWORD fontSize; //字体资源大小  BYTE font[fontSize]; //字体,如果字体资源大小为0,则此值不存在
+
+	DWORD captionSize;  //BYTE caption[captionSize];  //标题,如果标题长度为0,则此值不存在
+};*/
+
 typedef struct WindowPropery  //窗口属性
 {
 	DWORD WindowDataAddr;		  //窗口编译附加的无用数据?
@@ -19,7 +51,7 @@ typedef struct WindowPropery  //窗口属性
 	DWORD ZeroByte2;			  //0x00000000
 	DWORD ControlCount;			  //控件的个数
 	DWORD ControlSize;			  //所有组件占空间总大小
-	vector<DWORD> ControlID;      //控件的ID
+	vector<HTREEITEM> ControlID;   //控件的ID,现用来存放控件的根节点
 	DWORD ZeroByte3;			  //0x00000000
 	vector<DWORD> Controloffset;  //控件空间大小
 
@@ -99,5 +131,6 @@ protected:
 public:
 	virtual BOOL OnInitDialog();
 	CTreeCtrl m_Tree;
+	CImageList m_ICO;
 	afx_msg void OnTvnItemexpandingTree1(NMHDR *pNMHDR, LRESULT *pResult);
 };
