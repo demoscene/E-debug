@@ -15,7 +15,7 @@ Release/
 # Precompiled Headers
 *.gch
 *.pch
-
+*.sdf
 # Compiled Dynamic libraries
 *.so
 *.dylib
