@@ -52,10 +52,13 @@ typedef struct WindowPropery  //窗口属性
 	DWORD ControlCount;			  //控件的个数
 	DWORD ControlSize;			  //所有组件占空间总大小
 	vector<HTREEITEM> ControlID;   //控件的ID,现用来存放控件的根节点
+
 	DWORD ZeroByte3;			  //0x00000000
 	vector<DWORD> Controloffset;  //控件空间大小
 
-	DWORD ChildWindowId;  //子窗口的ID,注:每个窗体的子窗口默认为0x10001
+
+	DWORD ChildWindowId;  //子窗口的ID,注:每个窗体的子窗口默认为0x10001 
+	vector<string> ControlType;   //控件类型,为方便程序而增加的，原本不存在
 	BYTE ZeroByte[26];    //空白字节
 
 	DWORD left; //左边
@@ -132,5 +135,9 @@ public:
 	virtual BOOL OnInitDialog();
 	CTreeCtrl m_Tree;
 	CImageList m_ICO;
+	CStatic ControlType;
+	vector<WindowPropery> Window;
+
 	afx_msg void OnTvnItemexpandingTree1(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnTvnSelchangingTree1(NMHDR *pNMHDR, LRESULT *pResult);
 };

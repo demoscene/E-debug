@@ -23,7 +23,7 @@ HINSTANCE	g_hInstace;
 
 extc int _export cdecl ODBG_Plugindata(char shortname[32])
 {
-	strcpy(shortname, "E-Debug 3.02");
+	strcpy(shortname, "E-Debug 3.1");
 	return PLUGIN_VERSION;
 }
 
@@ -38,7 +38,7 @@ extc int _export cdecl ODBG_Plugininit(int ollydbgversion, HWND hw, DWORD *featu
 		Addtolist(0, 0, "提示: 插件版本与OD不匹配!");
 		return -1;
 	}
-	Addtolist(0, 0, "%s", "E-Debug 3.02");
+	Addtolist(0, 0, "%s", "E-Debug 3.1");
 	Addtolist(0, -1, "%s","  by:fjqisba");
 
 	//在这里修复一个OD 界面选项BUG
@@ -78,7 +78,7 @@ extc void _export cdecl ODBG_Pluginaction(int origin, int action, VOID *item)
 		{
 			CString szInfo;
 			szInfo += "Plugin:E-Debug\r\n";
-			szInfo += "Verion:3.02\r\n";
+			szInfo += "Verion:3.1\r\n";
 			szInfo += "Bug:fjqisba@sohu.com\r\n";
 			szInfo += " Thanks to Xjun";
 			MessageBox(NULL, szInfo, L"About", MB_ICONINFORMATION);
